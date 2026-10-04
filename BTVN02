@@ -1,0 +1,180 @@
+BÁO CÁO PHÂN TÍCH DỰ ÁN SHOPEE-LITE
+1. Phân tích lỗi FileNotFoundError
+Giả sử dự án có cấu trúc:
+Shopee-Lite/
+|
+|-- main.py
+|
+|-- assets/
+    |-- logo.png
+    |-- banner.jpg
+Nếu trong code sử dụng đường dẫn tuyệt đối, ví dụ:
+C:\Users\Nam\Desktop\Shopee-Lite\assets\logo.png
+thì chương trình chỉ tìm được file nếu thư mục dự án nằm đúng vị trí C:\Users\Nam\Desktop\Shopee-Lite.
+Khi gửi dự án cho bạn, máy của bạn ấy có thể lưu tại:
+D:\Projects\Shopee-Lite\
+hoặc:
+C:\Users\Ban\Downloads\Shopee-Lite\
+Lúc này đường dẫn cũ vẫn trỏ về máy của Nam, nên Python không tìm thấy file và phát sinh:
+FileNotFoundError
+Nguyên nhân chính
+Không phải do thiếu file, mà do chương trình đang tìm file ở sai vị trí.
+
+2. Giải pháp: Sử dụng đường dẫn tương đối
+Thay vì ghi toàn bộ đường dẫn của máy, nên dùng Relative Path, tức là xác định vị trí file dựa trên vị trí của dự án.
+Ví dụ:
+Shopee-Lite/
+|
+|-- main.py
+|
+|-- assets/
+    |-- logo.png
+Trong main.py, đường dẫn đến logo có thể viết:
+assets/logo.png
+Trong đó:
+. biểu thị thư mục hiện tại.
+.. biểu thị thư mục cha.
+Ví dụ:
+./assets/logo.png
+Có nghĩa là:
+Từ thư mục hiện tại → đi vào assets → lấy logo.png.
+Nếu cần đi lên một cấp:
+../assets/logo.png
+Có nghĩa là:
+Từ thư mục hiện tại → đi lên thư mục cha → vào assets → lấy logo.png.
+
+3. Ví dụ cụ thể với dự án Shopee-Lite
+Nếu cấu trúc là:
+Shopee-Lite/
+|
+|-- src/
+|   |-- main.py
+|
+|-- assets/
+    |-- logo.png
+main.py nằm trong src, còn assets nằm bên ngoài src.
+Vì vậy cần đi lên một cấp bằng ..:
+../assets/logo.png
+Có thể hình dung:
+Shopee-Lite/
+|
+|-- src/
+|   |-- main.py
+|       |
+|       |---- .. → Shopee-Lite/
+|                    |
+|                    |---- assets/
+|                           |
+|                           |---- logo.png
+|
+|-- assets/
+    |-- logo.png
+So sánh
+Không nên:
+C:\Users\Nam\Desktop\Shopee-Lite\assets\logo.png
+Nên:
+../assets/logo.png
+Cách này giúp dự án có thể di chuyển sang máy khác mà không cần sửa lại đường dẫn.
+
+4. Phân tích luồng IPO của ứng dụng
+IPO gồm:
+Input → Process → Output
+Trong trường hợp ứng dụng Shopee-Lite, CPU, RAM và Storage phối hợp với nhau như sau:
+Bước 1: Storage → RAM
+Các file của dự án như:
+main.py
+logo.png
+banner.jpg
+được lưu lâu dài trên SSD/HDD (Storage).
+Khi mở ứng dụng, hệ điều hành sẽ đọc các file cần thiết từ Storage và nạp chúng vào RAM.
+RAM là nơi chứa dữ liệu và chương trình đang được sử dụng để CPU truy cập nhanh hơn.
+
+Bước 2: RAM → CPU
+Sau khi chương trình và dữ liệu được nạp vào RAM, CPU lấy các lệnh và dữ liệu cần thiết để xử lý.
+Ví dụ:
+main.py
+   ↓
+RAM
+   ↓
+CPU xử lý code
+   ↓
+Đọc dữ liệu / xử lý ảnh
+CPU thực hiện các thao tác như:
+Chạy mã Python.
+Xử lý dữ liệu.
+Tính toán.
+Xử lý yêu cầu của người dùng.
+Điều khiển các hoạt động của ứng dụng.
+
+Bước 3: CPU → Output
+Sau khi xử lý, kết quả được đưa ra màn hình hoặc các thiết bị đầu ra.
+Ví dụ:
+Người dùng mở Shopee-Lite
+        ↓
+      Input
+        ↓
+Storage → RAM → CPU
+                ↓
+             Process
+                ↓
+             Output
+                ↓
+Hiển thị giao diện + logo + sản phẩm
+
+5. Tại sao máy bạn thân bị treo khi RAM 98%?
+Task Manager báo:
+RAM = 98%
+Điều này có nghĩa phần lớn bộ nhớ RAM đang được sử dụng.
+Khi RAM gần đầy:
+CPU thiếu không gian để làm việc với dữ liệu đang cần.
+Windows phải sử dụng Page File trên Storage để hỗ trợ RAM.
+SSD nhanh hơn HDD nhưng vẫn chậm hơn RAM rất nhiều.
+Việc chuyển dữ liệu giữa RAM và Storage tăng lên.
+Máy có thể bị lag, phản hồi chậm hoặc treo tạm thời.
+Có thể hình dung:
+RAM gần đầy
+    ↓
+Thiếu bộ nhớ
+    ↓
+Windows dùng Page File
+    ↓
+Đọc/ghi Storage nhiều hơn
+    ↓
+Ứng dụng phản hồi chậm
+    ↓
+Máy bị lag/treo
+
+6. Ba bước xử lý để giảm lag
+Bước 1: Kiểm tra ứng dụng đang chiếm nhiều RAM
+Nhấn:
+Ctrl + Shift + Esc
+để mở Task Manager.
+Vào Processes → Memory và sắp xếp từ cao xuống thấp.
+Đóng những ứng dụng không cần thiết đang chiếm nhiều RAM.
+Không nên tự ý tắt các tiến trình hệ thống quan trọng của Windows.
+
+Bước 2: Đóng các chương trình và tab không cần thiết
+Ví dụ:
+Đóng các tab trình duyệt không sử dụng.
+Thoát các ứng dụng đang chạy nền nhưng không cần thiết.
+Không mở đồng thời quá nhiều chương trình nặng.
+Điều này giúp giải phóng RAM để ứng dụng Shopee-Lite có đủ bộ nhớ hoạt động.
+
+Bước 3: Giảm tải và khởi động lại nếu cần
+Nếu RAM vẫn ở mức rất cao:
+Lưu công việc đang làm.
+Đóng ứng dụng.
+Khởi động lại máy.
+Sau khi khởi động lại, kiểm tra lại Task Manager → Performance → Memory.
+Nếu RAM thường xuyên ở mức gần 100% dù chỉ mở những ứng dụng cần thiết, có thể cân nhắc nâng cấp RAM nếu phần cứng của máy hỗ trợ.
+
+7. Kết luận
+Lỗi FileNotFoundError xảy ra vì chương trình sử dụng đường dẫn tuyệt đối, khiến đường dẫn phụ thuộc vào vị trí dự án trên máy của Nam. Khi chuyển sang máy khác, vị trí thư mục thay đổi nên Python không tìm thấy file.
+Giải pháp là sử dụng đường dẫn tương đối:
+./assets/logo.png
+hoặc khi cần đi lên thư mục cha:
+../assets/logo.png
+Đối với hoạt động của ứng dụng, Storage lưu dữ liệu lâu dài, RAM chứa chương trình và dữ liệu đang được sử dụng, còn CPU thực hiện xử lý. Khi RAM lên 98%, hệ điều hành có thể phải sử dụng Page File trên Storage, làm máy phản hồi chậm hơn.
+Ba bước xử lý chính: kiểm tra tiến trình chiếm RAM → đóng ứng dụng không cần thiết → khởi động lại/nâng cấp RAM nếu tình trạng thường xuyên xảy ra.
+
+
